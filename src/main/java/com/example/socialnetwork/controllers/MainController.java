@@ -75,7 +75,7 @@ public class MainController {
 
         Iterable<Message> messages = messageRepository.findAll();
         model.put("messages", messages);
-        return "main";
+        return "redirect:/main";
     }
 
 
