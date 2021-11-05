@@ -4,6 +4,7 @@ package com.example.socialnetwork.controllers;
 import com.example.socialnetwork.entities.User;
 import com.example.socialnetwork.entities.dto.CaptchaResponseDto;
 import com.example.socialnetwork.services.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
