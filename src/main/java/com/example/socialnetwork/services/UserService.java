@@ -5,9 +5,11 @@ import com.example.socialnetwork.entities.Role;
 import com.example.socialnetwork.entities.User;
 import com.example.socialnetwork.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -22,9 +24,20 @@ public class UserService implements UserDetailsService {
     @Autowired
     MailSender mailSender;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Value("${hostname}")
+    private String hostname;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
+
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found!");
+        }
+        return user;
     }
 
     public boolean addUser(User user) {
@@ -37,6 +50,8 @@ public class UserService implements UserDetailsService {
         user.setActive(true);
         user.setRoles(Collections.singleton(Role.USER));
         user.setActivationCode(UUID.randomUUID().toString());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         userRepository.save(user);
 
         sendMessage(user);
@@ -48,8 +63,9 @@ public class UserService implements UserDetailsService {
         if(!StringUtils.isEmpty(user.getEmail())) {
             String message = String.format(
                     "Hello, %s! \n" +
-                            "Welcome to Network! Please, visit next link to activate profile: http://localhost:8081/activate/%s",
+                            "Welcome to Network! Please, visit next link to activate profile: http://%s/activate/%s",
                     user.getUsername(),
+                    hostname,
                     user.getActivationCode()
             );
             mailSender.send(user.getEmail(), "Activation code", message);
@@ -115,5 +131,17 @@ public class UserService implements UserDetailsService {
         if (isChanged) {
             sendMessage(user);
         }
+    }
+
+    public void subscribe(User currentUser, User user) {
+        user.getSubscribers().add(currentUser);
+
+        userRepository.save(user);
+    }
+
+    public void unsubscribe(User currentUser, User user) {
+        user.getSubscribers().remove(currentUser);
+
+        userRepository.save(user);
     }
 }
