@@ -1,16 +1,18 @@
 package com.example.socialnetwork.entities;
 
+import com.example.socialnetwork.entities.util.MessageHelper;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.GenerationType;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-
     private Long id;
 
     @NotBlank(message = "Please fill the message")
@@ -26,6 +28,14 @@ public class Message {
 
     private String filename;
 
+    @ManyToMany
+    @JoinTable(
+            name = "message_likes",
+            joinColumns = {@JoinColumn(name = "message_id")},
+            inverseJoinColumns = {@JoinColumn(name = "user_id")}
+    )
+    private Set<User> likes = new HashSet<>();
+
     public Message() {}
 
     public Message(String text, String tag, User user) {
@@ -35,7 +45,7 @@ public class Message {
     }
 
     public String getAuthorName() {
-        return author != null ? author.getUsername() : "<None>";
+        return MessageHelper.getAuthorName(author);
     }
 
     public String getText() {
@@ -76,5 +86,13 @@ public class Message {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public Set<User> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<User> likes) {
+        this.likes = likes;
     }
 }
