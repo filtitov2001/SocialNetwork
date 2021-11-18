@@ -36,6 +36,8 @@ public class MailConfig {
         properties.put("mail.transport.protocol", protocol);
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("spring.mail.default-encoding", "UTF-8");
+
 
         return mailSender;
     }
